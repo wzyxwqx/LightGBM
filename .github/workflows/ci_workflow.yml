@@ -1,0 +1,108 @@
+name: GitHub Actions
+
+on: [push]
+
+jobs:
+  test:
+    name: ${{ matrix.task }} (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        task: [regular, sdist, bdist, if-else, pylint, mpi-source, mpi-pip, gpu-source, gpu-pip]
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+        include:
+          - task: regular
+            python_version: 3.6
+          - task: sdist
+            python_version: 2.7
+          - task: mpi-source
+            method: source
+          - task: mpi-pip
+            method: pip
+          - task: gpu-source
+            method: source
+            python_version: 3.5
+          - task: gpu-pip
+            method: pip
+            python_version: 3.6
+        exclude:
+          - os: macOS-latest
+            task: pylint
+          - os: macOS-latest
+            task: gpu-source
+          - os: macOS-latest
+            task: gpu-pip
+          - os: windows-latest
+            task: if-else
+          - os: windows-latest
+            task: pylint
+          - os: windows-latest
+            task: mpi-source
+          - os: windows-latest
+            task: mpi-pip
+          - os: windows-latest
+            task: gpu-source
+          - os: windows-latest
+            task: gpu-pip
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+          submodules: true
+      - name: Setup and run tests on Linux and macOS
+        if: matrix.os != 'windows-latest'
+        shell: bash
+        run: |
+          if [[ "${{ matrix.task }}" == "gpu-source" || "${{ matrix.task }}" == "gpu-pip" ]]; then
+              export TASK="gpu"
+          elif [[ "${{ matrix.task }}" == "mpi-source" || "${{ matrix.task }}" == "mpi-pip" ]]; then
+              export TASK="mpi"
+          fi
+          export METHOD="${{ matrix.method }}"
+          if [ -z ${{ matrix.python_version }} ]; then
+              export PYTHON_VERSION="3.7"
+          else
+              export PYTHON_VERSION=${{ matrix.python_version }}
+          fi
+
+          export HOME_DIRECTORY="$HOME"
+          export BUILD_DIRECTORY="$GITHUB_WORKSPACE"
+          if [[ "${{ matrix.os }}" == "macOS-latest" ]]; then
+              export OS_NAME="macos"
+              export COMPILER="gcc"
+          elif [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+              export OS_NAME="linux"
+              export COMPILER="clang"
+          fi
+          export GITHUB_ACTIONS="true"
+          export CONDA_ENV="test-env"
+          export LGB_VER=$(head -n 1 VERSION.txt)
+          export AMDAPPSDK_PATH=$HOME/AMDAPPSDK
+          export LD_LIBRARY_PATH="$AMDAPPSDK_PATH/lib/x86_64:$LD_LIBRARY_PATH"
+          export OPENCL_VENDOR_PATH=$AMDAPPSDK_PATH/etc/OpenCL/vendors
+
+          $GITHUB_WORKSPACE/.ci/setup.sh
+          $GITHUB_WORKSPACE/.ci/test.sh
+      - name: Setup and run tests on Windows
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          if ("${{ matrix.python_version }}" -ne "") {
+              $env:PYTHON_VERSION="${{ matrix.python_version }}"
+          } else {
+              $env:PYTHON_VERSION="3.7"
+          }
+
+          $env:HOME_DIRECTORY=$env:HOME
+          $env:BUILD_DIRECTORY=$env:GITHUB_WORKSPACE
+          $env:GITHUB_ACTIONS="true"
+          $env:CONDA_ENV="test-env"
+
+          & "$env:CONDA/Scripts/activate"
+          & "$env:CONDA/Scripts/conda" config --set always_yes yes --set changeps1 no
+          & "$env:CONDA/Scripts/conda" update -q -y conda
+          & "$env:CONDA/Scripts/conda" create -q -y -n $env:CONDA_ENV python=$env:PYTHON_VERSION joblib matplotlib numpy pandas psutil pytest python-graphviz scikit-learn scipy
+          & "$env:CONDA/Scripts/activate" $env:CONDA_ENV
+          & "$env:GITHUB_WORKSPACE/.ci/test_windows.ps1"

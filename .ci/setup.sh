@@ -12,7 +12,7 @@ if [[ $OS_NAME == "macos" ]]; then
 #            brew cask uninstall oclint  #  reserve variant to deal with conflict link
             brew link --overwrite gcc
             brew upgrade gcc
-        else
+        elif [[ $AZURE == "true" ]]; then
             brew update
         fi
         if [[ $TASK != "mpi" ]]; then
@@ -25,7 +25,9 @@ if [[ $OS_NAME == "macos" ]]; then
     if [[ $AZURE == "true" ]] && [[ $TASK == "sdist" ]]; then
         brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/f3544543a3115023fc7ca962c21d14b443f419d0/Formula/swig.rb  # swig 3.0.12
     fi
-    wget -q -O conda.sh https://repo.continuum.io/miniconda/Miniconda${PYTHON_VERSION:0:1}-latest-MacOSX-x86_64.sh
+    if [[ $GITHUB_ACTIONS == "true" ]]; then
+        wget -q -O conda.sh https://repo.continuum.io/miniconda/Miniconda${PYTHON_VERSION:0:1}-latest-MacOSX-x86_64.sh
+    fi
 else  # Linux
     if [[ $AZURE == "true" ]] && [[ $COMPILER == "clang" ]]; then
         sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-7 100
@@ -53,7 +55,7 @@ else  # Linux
     fi
 fi
 
-if [[ $TRAVIS == "true" ]] || [[ $OS_NAME == "macos" ]]; then
+if [[ $TRAVIS == "true" ]] || [[ $AZURE == "true" ]] && [[ $OS_NAME == "macos" ]]; then
     sh conda.sh -b -p $CONDA
 fi
 conda config --set always_yes yes --set changeps1 no
