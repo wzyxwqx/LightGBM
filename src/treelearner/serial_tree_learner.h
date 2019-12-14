@@ -83,7 +83,8 @@ class SerialTreeLearner: public TreeLearner {
 
   void RenewTreeOutput(Tree* tree, const ObjectiveFunction* obj, std::function<double(const label_t*, int)> residual_getter,
                        data_size_t total_num_data, const data_size_t* bag_indices, data_size_t bag_cnt) const override;
-
+  const Dataset* TrainData() override {return train_data_;} 
+  
  protected:
   virtual std::vector<int8_t> GetUsedFeatures(bool is_tree_level);
   /*!

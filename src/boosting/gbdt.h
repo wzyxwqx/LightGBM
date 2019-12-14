@@ -508,6 +508,11 @@ class GBDT : public GBDTBase {
   std::string loaded_parameter_;
   std::vector<int8_t> monotone_constraints_;
 
+  std::vector<int> feature2group_;
+  std::vector<int> feature2subfeature_;
+  std::vector<std::unique_ptr<FeatureGroup>> feature_groups_;
+  std::vector<uint64_t> group_bin_boundaries_;
+
   Json forced_splits_json_;
 };
 
