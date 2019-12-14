@@ -653,18 +653,18 @@ void Tree::ResetThreshold(int node_index, int new_threshold, float discount_fact
 }
 
 bool Tree::IsTwoLeavesParents(int i) const {
-  if (left_child_[i] < 0 && right_child_[i] < 0)
-    if (!GetDecisionType(decision_type_[i], kCategoricalMask))
+  if (left_child_[i] < 0 && right_child_[i] < 0)
+    if (!GetDecisionType(decision_type_[i], kCategoricalMask))
     return 1;
   return 0;
 }
-void Tree::GetLeafParent(std::vector<int>& leaf_parent) {
+void Tree::GetLeafParent(std::vector<int>& leaf_parent) {
   int i;
-  for (i  = 0; i < num_leaves() - 1; ++i) {
-    if (right_child_[i] < 0) {
+  for (i = 0; i < num_leaves() - 1; ++i) {
+    if (right_child_[i] < 0) {
       leaf_parent[~right_child_[i]] = i;
     }
-    if (left_child_[i] < 0) {
+    if (left_child_[i]< 0) {
       leaf_parent[~left_child_[i]] = i;
     }
   }

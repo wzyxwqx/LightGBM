@@ -99,12 +99,6 @@ class Metadata {
   */
   void SetInitScore(const double* init_score, data_size_t len);
 
-  void ConstructHistogramsForRefit(int feature,
-    const data_size_t* data_indices, data_size_t num_data,
-    const score_t* gradients, const score_t* hessians,
-    score_t* ordered_gradients, score_t* ordered_hessians,
-    HistogramBinEntry* hist_data);
-
 
   /*!
   * \brief Save binary data to file
@@ -423,6 +417,13 @@ class Dataset {
                            score_t* ordered_gradients, score_t* ordered_hessians,
                            bool is_constant_hessian,
                            HistogramBinEntry* histogram_data) const;
+
+  void ConstructHistogramsForRefit(int feature,
+    const data_size_t* data_indices, data_size_t num_data,
+    const score_t* gradients, const score_t* hessians,
+    score_t* ordered_gradients, score_t* ordered_hessians,
+    HistogramBinEntry* hist_data);
+
 
   void FixHistogram(int feature_idx, double sum_gradient, double sum_hessian, data_size_t num_data,
                     HistogramBinEntry* data) const;
