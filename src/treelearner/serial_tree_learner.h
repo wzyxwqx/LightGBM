@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * Copyright (c) 2016 Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See LICENSE file in the project root for license information.
  */
@@ -57,6 +57,11 @@ class SerialTreeLearner: public TreeLearner {
 
   Tree* FitByExistingTree(const Tree* old_tree, const std::vector<int>& leaf_pred,
                           const score_t* gradients, const score_t* hessians) override;
+
+  Tree* FitThreshold(const std::vector<int>& leaf_pred, const Tree* old_tree, const score_t* gradients, const score_t* hessians);
+
+  int SerialTreeLearner::FindBestSplitsForThreshold(int feature_index, HistogramBinEntry* hist_data, const data_size_t* data_indices, data_size_t num_data,
+    const score_t* gradients, const score_t* hessians);
 
   void SetBaggingData(const data_size_t* used_indices, data_size_t num_data) override {
     data_partition_->SetUsedDataIndices(used_indices, num_data);

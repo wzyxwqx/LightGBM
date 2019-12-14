@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * Copyright (c) 2016 Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See LICENSE file in the project root for license information.
  */
@@ -644,6 +644,33 @@ void Tree::UnwindPath(PathElement *unique_path, int unique_depth, int path_index
     unique_path[i].one_fraction = unique_path[i + 1].one_fraction;
   }
 }
+
+void Tree::ResetThreshold(int node_index, int new_threshold, float discount_factor) {
+  float a = static_cast<float>(threshold_[node_index]);
+  float b = static_cast<float>(new_threshold);
+  float changed_threshold = a * (1 - discount_factor) + b * new_threshold;
+  threshold_[node_index] = static_cast<int> (changed_threshold);
+}
+
+bool Tree::IsTwoLeavesParents(int i) const {
+  if (left_child_[i] < 0 && right_child_[i] < 0)
+    if (!GetDecisionType(decision_type_[i], kCategoricalMask))
+    return 1;
+  return 0;
+}
+void Tree::GetLeafParent(std::vector<int>& leaf_parent) {
+  int i;
+  for (i  = 0; i < num_leaves() - 1; ++i) {
+    if (right_child_[i] < 0) {
+      leaf_parent[~right_child_[i]] = i;
+    }
+    if (left_child_[i] < 0) {
+      leaf_parent[~left_child_[i]] = i;
+    }
+  }
+  return;
+}
+
 
 double Tree::UnwoundPathSum(const PathElement *unique_path, int unique_depth, int path_index) {
   const double one_fraction = unique_path[path_index].one_fraction;

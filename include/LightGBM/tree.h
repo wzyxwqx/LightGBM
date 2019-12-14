@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * Copyright (c) 2016 Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See LICENSE file in the project root for license information.
  */
@@ -118,6 +118,13 @@ class Tree {
   * \param feature_values Feature value of this record
   * \return Prediction result
   */
+
+  bool Tree::IsTwoLeavesParents(int i) const;
+
+  void Tree::GetLeafParent(std::vector<int>& leaf_parent);
+
+  void ResetThreshold(int node_index, int new_threshold, float discount_factor);
+
   inline double Predict(const double* feature_values) const;
   inline double PredictByMap(const std::unordered_map<int, double>& feature_values) const;
 

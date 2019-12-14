@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * Copyright (c) 2016 Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See LICENSE file in the project root for license information.
  */
@@ -75,6 +75,8 @@ class GBDT : public GBDTBase {
     }
     num_iteration_for_pred_ = static_cast<int>(models_.size()) / num_tree_per_iteration_;
   }
+
+  void GBDT::RefitTreeThreshold(const std::vector<std::vector<int>>& tree_leaf_prediction);
 
   void ShuffleModels(int start_iter, int end_iter) override {
     int total_iter = static_cast<int>(models_.size()) / num_tree_per_iteration_;

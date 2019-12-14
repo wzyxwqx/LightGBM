@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * Copyright (c) 2016 Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See LICENSE file in the project root for license information.
  */
@@ -99,6 +99,12 @@ class Metadata {
   */
   void SetInitScore(const double* init_score, data_size_t len);
 
+  void ConstructHistogramsForRefit(int feature,
+    const data_size_t* data_indices, data_size_t num_data,
+    const score_t* gradients, const score_t* hessians,
+    score_t* ordered_gradients, score_t* ordered_hessians,
+    HistogramBinEntry* hist_data);
+
 
   /*!
   * \brief Save binary data to file
@@ -134,6 +140,8 @@ class Metadata {
   inline void SetWeightAt(data_size_t idx, label_t value) {
     weights_[idx] = value;
   }
+
+
 
   /*!
   * \brief Set Query Id for one record

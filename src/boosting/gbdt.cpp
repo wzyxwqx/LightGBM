@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * Copyright (c) 2016 Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See LICENSE file in the project root for license information.
  */
@@ -465,6 +465,33 @@ void GBDT::RollbackOneIter() {
   }
   --iter_;
 }
+
+void GBDT::RefitTreeThreshold(const std::vector<std::vector<int>>& tree_leaf_prediction) {
+  CHECK(tree_leaf_prediction.size() > 0);
+  CHECK(static_cast<size_t>(num_data_) == tree_leaf_prediction.size());
+  CHECK(static_cast<size_t>(models_.size()) == tree_leaf_prediction[0].size());
+  std::vector<int> leaf_pred(num_data_);
+
+  int num_iterations = static_cast<int>(models_.size() / num_tree_per_iteration_);
+  for (int iter = 0; iter < num_iterations; ++iter) {
+    Boosting();//just do it
+    for (int tree_id = 0; tree_id < num_tree_per_iteration_; ++tree_id) {
+      int model_index = iter * num_tree_per_iteration_ + tree_id;
+#pragma omp parallel for schedule(static)
+      for (int i = 0; i < num_data_; ++i) {
+        leaf_pred[i] = tree_leaf_prediction[i][model_index];
+        CHECK(leaf_pred[i] < models_[model_index]->num_leaves());
+      };
+      size_t offset = static_cast<size_t>(tree_id)* num_data_;
+      auto grad = gradients_.data() + offset;
+      auto hess = hessians_.data() + offset;
+      auto new_tree = tree_learner_->FitThreshold(leaf_pred, models_[model_index].get(), grad, hess);
+      models_[model_index].reset(new_tree);
+    }
+  }
+}
+
+
 
 bool GBDT::EvalAndCheckEarlyStopping() {
   bool is_met_early_stopping = false;

@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * Copyright (c) 2016 Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See LICENSE file in the project root for license information.
  */
@@ -405,6 +405,35 @@ void Dataset::ResetConfig(const char* parameters) {
       feature_penalty_.clear();
     }
   }
+}
+
+void Dataset::ConstructHistogramsForRefit(int feature,
+  const data_size_t* data_indices, data_size_t num_data,
+  const score_t* gradients, const score_t* hessians,
+  score_t* ordered_gradients, score_t* ordered_hessians,
+  HistogramBinEntry* hist_data) {
+  auto ptr_ordered_grad = gradients;
+  auto ptr_ordered_hess = hessians;
+
+#pragma omp parallel for schedule(static)
+  for (data_size_t i = 0; i < num_data; ++i) {
+    ordered_gradients[i] = gradients[data_indices[i]];
+    ordered_hessians[i] = hessians[data_indices[i]];
+  }
+
+  ptr_ordered_grad = ordered_gradients;
+  ptr_ordered_hess = ordered_hessians;
+  auto data_ptr = hist_data + group_bin_boundaries_[feature];//maybe this feature needs to be converted
+  const int num_bin = feature_groups_[feature]->num_total_bin_;
+  std::memset(reinterpret_cast<void*>(data_ptr + 1), 0, (num_bin - 1) * sizeof(HistogramBinEntry));
+  // construct histograms
+  feature_groups_[feature]->bin_data_->ConstructHistogram(
+    data_indices,
+    num_data,
+    ptr_ordered_grad,
+    ptr_ordered_hess,
+    data_ptr);
+}
 }
 
 void Dataset::FinishLoad() {
