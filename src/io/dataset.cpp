@@ -1,4 +1,4 @@
-﻿/*!
+/*!
  * Copyright (c) 2016 Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See LICENSE file in the project root for license information.
  */
@@ -408,15 +408,15 @@ void Dataset::ResetConfig(const char* parameters) {
 }
 
 void Dataset::ConstructHistogramsForRefit(int feature,
-  const data_size_t* data_indices, data_size_t num_data,
+  const int* data_indices, int num_data,
   const score_t* gradients, const score_t* hessians,
   score_t* ordered_gradients, score_t* ordered_hessians,
-  HistogramBinEntry* hist_data) {
+  HistogramBinEntry* hist_data) const{
   auto ptr_ordered_grad = gradients;
   auto ptr_ordered_hess = hessians;
 
-#pragma omp parallel for schedule(static)
-  for (data_size_t i = 0; i < num_data; ++i) {
+  //#pragma omp parallel for schedule(static)  should be adjusted
+  for (int i = 0; i < num_data; ++i) {
     ordered_gradients[i] = gradients[data_indices[i]];
     ordered_hessians[i] = hessians[data_indices[i]];
   }
@@ -434,7 +434,7 @@ void Dataset::ConstructHistogramsForRefit(int feature,
     ptr_ordered_hess,
     data_ptr);
 }
-}
+
 
 void Dataset::FinishLoad() {
   if (is_finish_load_) { return; }

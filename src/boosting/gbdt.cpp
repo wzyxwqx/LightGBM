@@ -1,4 +1,4 @@
-﻿/*!
+/*!
  * Copyright (c) 2016 Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See LICENSE file in the project root for license information.
  */
@@ -470,7 +470,7 @@ void GBDT::RefitTreeThreshold(const std::vector<std::vector<int>>& tree_leaf_pre
   CHECK(tree_leaf_prediction.size() > 0);
   CHECK(static_cast<size_t>(num_data_) == tree_leaf_prediction.size());
   CHECK(static_cast<size_t>(models_.size()) == tree_leaf_prediction[0].size());
-  std::vector<int> leaf_pred(num_data_);
+  std::vector<int> leaf_pred(num_data_);
 
   int num_iterations = static_cast<int>(models_.size() / num_tree_per_iteration_);
   for (int iter = 0; iter < num_iterations; ++iter) {

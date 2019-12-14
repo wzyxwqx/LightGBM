@@ -1,4 +1,4 @@
-﻿/*!
+/*!
  * Copyright (c) 2016 Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See LICENSE file in the project root for license information.
  */
@@ -419,10 +419,10 @@ class Dataset {
                            HistogramBinEntry* histogram_data) const;
 
   void ConstructHistogramsForRefit(int feature,
-    const data_size_t* data_indices, data_size_t num_data,
+    const int* data_indices, int num_data,
     const score_t* gradients, const score_t* hessians,
     score_t* ordered_gradients, score_t* ordered_hessians,
-    HistogramBinEntry* hist_data);
+    HistogramBinEntry* hist_data) const;
 
 
   void FixHistogram(int feature_idx, double sum_gradient, double sum_hessian, data_size_t num_data,

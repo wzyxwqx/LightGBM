@@ -1,4 +1,4 @@
-﻿/*!
+/*!
  * Copyright (c) 2016 Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See LICENSE file in the project root for license information.
  */
@@ -147,40 +147,45 @@ Tree* SerialTreeLearner::FitThreshold(const std::vector<int>& leaf_pred, const T
   // some initial works before training
   histogram_pool_.ResetMap();//This is used to store data, can be replaced
   auto tree = std::unique_ptr<Tree>(new Tree(*old_tree));//construct tree
-  std::vector<bool> node_is_numparent(tree->num_leaves() - 1, 0);//store node has two children
-  std::vector<int> leaf_parent(tree->num_leaves(), 0);//store leaves' parents
-  #pragma omp parallel for schedule(static)
+  std::vector<bool> node_is_numparent(tree->num_leaves() - 1, 0);//store node has two children
+  std::vector<int> leaf_parent(tree->num_leaves(), 0);//store leaves' parents
 
-    for(int i = 0;i<tree->num_leaves() - 1; ++i) {
+  for(int i = 0;i<tree->num_leaves() - 1; ++i) {
     node_is_numparent[i] = tree->IsTwoLeavesParents(i);
   }
   tree->GetLeafParent(leaf_parent);
-
+  std::vector<data_size_t> data_indices;
+  //OMP_INIT_EX();
+  //#pragma omp parallel for schedule(static)
   for (int iter = 0; iter < tree->num_leaves() - 1; iter++) {
-    if (!node_is_numparent[j]) continue;
-    std::vector<int> data_indices;
-    for (int i  = 0; i < num_data_; ++i)
-      if (leaf_parent[leaf_pred[i]] == j && node_is_numparent[j]) {
+    //OMP_LOOP_EX_BEGIN();
+    if (!node_is_numparent[iter]) continue;
+    data_indices.resize(0);
+    for (int i  = 0; i < num_data_; ++i)
+      if (leaf_parent[leaf_pred[i]] == iter && node_is_numparent[iter]) {
       data_indices.push_back(i);
     }
-    //feature need to be get here
+    int feature = tree->GetNodeFeature(iter);//this is used to get feature but need to be changed later
+    
     histogram_pool_.Get(1, &smaller_leaf_histogram_array_);//using smaller_leaf_histogram_array_ may cause problems
     HistogramBinEntry* fit_hist_data = smaller_leaf_histogram_array_[0].RawData() - 1;;
-    train_data_->ConstructHistogramsForRefit(feature, data_indices,
-      num_data, gradients_,
+    train_data_->ConstructHistogramsForRefit(feature, &data_indices[0],
+      data_indices.size(), gradients_,
       hessians_, ordered_gradients_.data(),
       ordered_hessians_.data(), fit_hist_data);
-    int new_threshold = FindBestSplitsForThreshold(feature, &fit_hist_data, data_indices, num_data,
+    int new_threshold = FindBestSplitsForThreshold(feature, &data_indices[0], data_indices.size(),
       gradients_, hessians_);
-    float discount_factor = 0.2; //this can be changed, newthreshold portion
+    double discount_factor = 0.2; //this can be changed, newthreshold portion
     tree->ResetThreshold(iter, new_threshold, discount_factor);
-    data_idx.clear();
+    data_indices.clear();
+    //OMP_LOOP_EX_END();
   }
+  //OMP_THROW_EX();
   return tree.release();
 
 }
 
-int SerialTreeLearner::FindBestSplitsForThreshold(int feature_index, HistogramBinEntry* hist_data, const data_size_t* data_indices, data_size_t num_data,
+int SerialTreeLearner::FindBestSplitsForThreshold(int feature_index, const data_size_t* data_indices, data_size_t num_data,
   const score_t* gradients, const score_t* hessians) {
   score_t sum_gradients = 0;
   score_t sum_hessians = 0;

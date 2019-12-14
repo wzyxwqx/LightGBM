@@ -80,6 +80,8 @@ class TreeLearner {
   virtual void RenewTreeOutput(Tree* tree, const ObjectiveFunction* obj, std::function<double(const label_t*, int)> residual_getter,
                                data_size_t total_num_data, const data_size_t* bag_indices, data_size_t bag_cnt) const = 0;
 
+
+  virtual Tree* FitThreshold(const std::vector<int>& leaf_pred, const Tree* old_tree, const score_t* gradients, const score_t* hessians) = 0;
   TreeLearner() = default;
   /*! \brief Disable copy */
   TreeLearner& operator=(const TreeLearner&) = delete;

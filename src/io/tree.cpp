@@ -1,4 +1,4 @@
-﻿/*!
+/*!
  * Copyright (c) 2016 Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See LICENSE file in the project root for license information.
  */
@@ -645,11 +645,8 @@ void Tree::UnwindPath(PathElement *unique_path, int unique_depth, int path_index
   }
 }
 
-void Tree::ResetThreshold(int node_index, int new_threshold, float discount_factor) {
-  float a = static_cast<float>(threshold_[node_index]);
-  float b = static_cast<float>(new_threshold);
-  float changed_threshold = a * (1 - discount_factor) + b * new_threshold;
-  threshold_[node_index] = static_cast<int> (changed_threshold);
+void Tree::ResetThreshold(int node_index, double new_threshold, double discount_factor) {
+  threshold_[node_index] = threshold_[node_index] * (1 - discount_factor) + discount_factor * new_threshold;
 }
 
 bool Tree::IsTwoLeavesParents(int i) const {
@@ -669,6 +666,10 @@ void Tree::GetLeafParent(std::vector<int>& leaf_parent) {
     }
   }
   return;
+}
+
+int Tree::GetNodeFeature(int node) {
+  return split_feature_[node];
 }
 
 
