@@ -482,7 +482,7 @@ void GBDT::RefitTreeThreshold(const std::vector<std::vector<int>>& tree_leaf_pre
     Boosting();//just do it
     for (int tree_id = 0; tree_id < num_tree_per_iteration_; ++tree_id) {
       int model_index = iter * num_tree_per_iteration_ + tree_id;
-#pragma omp parallel for schedule(static)
+      #pragma omp parallel for schedule(static)
       for (int i = 0; i < num_data_; ++i) {
         leaf_pred[i] = tree_leaf_prediction[i][model_index];
         CHECK(leaf_pred[i] < models_[model_index]->num_leaves());
@@ -490,7 +490,8 @@ void GBDT::RefitTreeThreshold(const std::vector<std::vector<int>>& tree_leaf_pre
       size_t offset = static_cast<size_t>(tree_id)* num_data_;
       auto grad = gradients_.data() + offset;
       auto hess = hessians_.data() + offset;
-      auto new_tree = tree_learner_->FitThreshold(leaf_pred, models_[model_index].get(), grad, hess);
+      auto new_tree = tree_learner_->FitThreshold(group_bin_boundaries_, feature_groups_, feature2subfeature_, feature2group_,
+        leaf_pred, models_[model_index].get(), grad, hess);
       models_[model_index].reset(new_tree);
     }
   }

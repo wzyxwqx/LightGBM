@@ -613,16 +613,16 @@ class Dataset {
   void addFeaturesFrom(Dataset* other);
 
   inline void GetFeature2Group(std::vector<int>& out) const {
-    out.assign(feature2group_.begin(),feature2group_.end());
+    out = feature2group_;
   }
   inline void GetFeature2SubFeature(std::vector<int>& out) const {
-    out.assign(feature2subfeature_.begin(),feature2subfeature_.end());
+    out=feature2subfeature_;
   }
   inline void GetFeatureGroups(std::vector<std::unique_ptr<FeatureGroup>>& out) const {
-    out.assign(feature_groups_.begin(),feature_groups_.end());
+    //out.assign(feature_groups_.begin(),feature_groups_.end());
   }
   inline void GetGroupBinBoundaries(std::vector<uint64_t>& out) const {
-    out.assign(group_bin_boundaries_.begin(),group_bin_boundaries_.end());
+    out=group_bin_boundaries_;
   }
  private:
   std::string data_filename_;

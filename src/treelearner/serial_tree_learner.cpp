@@ -138,7 +138,13 @@ void SerialTreeLearner::ResetTrainingData(const Dataset* train_data) {
   }
 }
 
-Tree* SerialTreeLearner::FitThreshold(const std::vector<int>& leaf_pred, const Tree* old_tree, const score_t* gradients, const score_t* hessians) {
+Tree* SerialTreeLearner::FitThreshold(const std::vector<uint64_t> &group_bin_boundaries,
+  const std::vector<std::unique_ptr<FeatureGroup>> &feature_groups,
+  const std::vector<int>& feature2subfeature,
+  const std::vector<int>& feature2group,
+  const std::vector<int>& leaf_pred,
+  const Tree* old_tree, const score_t* gradients,
+  const score_t* hessians) {
   gradients_ = gradients;
   hessians_ = hessians;
 #ifdef TIMETAG
@@ -169,12 +175,80 @@ Tree* SerialTreeLearner::FitThreshold(const std::vector<int>& leaf_pred, const T
     
     histogram_pool_.Get(1, &smaller_leaf_histogram_array_);//using smaller_leaf_histogram_array_ may cause problems
     HistogramBinEntry* fit_hist_data = smaller_leaf_histogram_array_[0].RawData() - 1;;
+    /*
     train_data_->ConstructHistogramsForRefit(feature, &data_indices[0],
       data_indices.size(), gradients_,
       hessians_, ordered_gradients_.data(),
       ordered_hessians_.data(), fit_hist_data);
-    int new_threshold = FindBestSplitsForThreshold(feature, &data_indices[0], data_indices.size(),
-      gradients_, hessians_);
+    */
+    //the following section is used to construct histograms
+    auto ptr_ordered_grad = gradients_;
+    auto ptr_ordered_hess = hessians_;
+    //#pragma omp parallel for schedule(static)  should be adjusted
+    for (int i = 0; i < data_indices.size(); ++i) {
+      ordered_gradients_.data()[i] = gradients_[data_indices[i]];
+      ordered_hessians_.data()[i] = hessians_[data_indices[i]];
+    }
+
+    ptr_ordered_grad = ordered_gradients_.data();
+    ptr_ordered_hess = ordered_hessians_.data();
+    auto data_ptr = fit_hist_data + group_bin_boundaries[feature];//maybe this feature needs to be converted
+    const int num_bin = feature_groups[feature]->num_total_bin_;
+    std::memset(reinterpret_cast<void*>(data_ptr + 1), 0, (num_bin - 1) * sizeof(HistogramBinEntry));
+    feature_groups[feature]->bin_data_->ConstructHistogram(
+      data_indices.data(),
+      data_indices.size(),
+      ptr_ordered_grad,
+      ptr_ordered_hess,
+      data_ptr);
+    // finish constructing histograms
+    //the following section is used to find best split
+    //int new_threshold = FindBestSplitsForThreshold(feature, &data_indices[0], data_indices.size(), gradients_, hessians_);
+    score_t sum_gradients = 0;
+    score_t sum_hessians = 0;
+    for (data_size_t i = 0; i < data_indices.size(); ++i) {
+      sum_gradients = sum_gradients + gradients_[data_indices[i]];
+      sum_hessians = sum_hessians + hessians_[data_indices[i]];
+    }
+    SplitInfo best_split;
+    //it seems that we do not need feature transform now
+    /*
+    train_data_->FixHistogram(feature,
+      sum_gradients, sum_hessians,
+      data_indices.size(),
+      smaller_leaf_histogram_array_[feature].RawData());
+    */
+    // the following is fixhistogram
+    HistogramBinEntry* data = smaller_leaf_histogram_array_[feature].RawData();
+    const int group = feature2group[feature];
+    const int sub_feature = feature2subfeature[feature];
+    const BinMapper* bin_mapper = feature_groups[group]->bin_mappers_[sub_feature].get();
+    const int default_bin = bin_mapper->GetDefaultBin();
+    if (default_bin > 0) {
+      const int num_bin = bin_mapper->num_bin();
+      data[default_bin].sum_gradients = sum_gradients;
+      data[default_bin].sum_hessians = sum_hessians;
+      data[default_bin].cnt = data_indices.size();
+      for (int i = 0; i < num_bin; ++i) {
+        if (i != default_bin) {
+          data[default_bin].sum_gradients -= data[i].sum_gradients;
+          data[default_bin].sum_hessians -= data[i].sum_hessians;
+          data[default_bin].cnt -= data[i].cnt;
+        }
+      }
+    }
+    //finish fixing histogram
+
+    smaller_leaf_histogram_array_[feature].FindBestThreshold(sum_gradients,
+      sum_hessians,
+      data_indices.size(),
+      -std::numeric_limits<double>::max(),
+      std::numeric_limits<double>::max(),
+      &best_split);
+
+    int new_threshold = best_split.threshold;
+
+
     double discount_factor = 0.2; //this can be changed, newthreshold portion
     tree->ResetThreshold(iter, new_threshold, discount_factor);
     data_indices.clear();

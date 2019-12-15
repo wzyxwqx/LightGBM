@@ -229,18 +229,21 @@ class FeatureGroup {
     bin_data_.reset(other.bin_data_->Clone());
   }
 
+  /*! \brief Bin data of this feature */
+  std::unique_ptr<Bin> bin_data_;
+  int num_total_bin_;
+  /*! \brief Bin mapper for sub features */
+  std::vector<std::unique_ptr<BinMapper>> bin_mappers_;
  private:
   /*! \brief Number of features */
   int num_feature_;
-  /*! \brief Bin mapper for sub features */
-  std::vector<std::unique_ptr<BinMapper>> bin_mappers_;
+
   /*! \brief Bin offsets for sub features */
   std::vector<uint32_t> bin_offsets_;
-  /*! \brief Bin data of this feature */
-  std::unique_ptr<Bin> bin_data_;
+
   /*! \brief True if this feature is sparse */
   bool is_sparse_;
-  int num_total_bin_;
+
 };
 
 

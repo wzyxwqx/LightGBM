@@ -7,6 +7,7 @@
 
 #include <LightGBM/config.h>
 #include <LightGBM/meta.h>
+#include <LightGBM/feature_group.h>
 
 #include <string>
 #include <vector>
@@ -81,7 +82,13 @@ class TreeLearner {
                                data_size_t total_num_data, const data_size_t* bag_indices, data_size_t bag_cnt) const = 0;
 
 
-  virtual Tree* FitThreshold(const std::vector<int>& leaf_pred, const Tree* old_tree, const score_t* gradients, const score_t* hessians) = 0;
+  virtual Tree* FitThreshold(const std::vector<uint64_t>& group_bin_boundaries,
+    const std::vector<std::unique_ptr<FeatureGroup>>& feature_groups,
+    const std::vector<int>& feature2subfeature,
+    const std::vector<int>& feature2group,
+    const std::vector<int>& leaf_pred,
+    const Tree* old_tree, const score_t* gradients,
+    const score_t* hessians) = 0;
   TreeLearner() = default;
   /*! \brief Disable copy */
   TreeLearner& operator=(const TreeLearner&) = delete;

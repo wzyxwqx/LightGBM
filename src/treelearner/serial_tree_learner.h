@@ -6,6 +6,7 @@
 #define LIGHTGBM_TREELEARNER_SERIAL_TREE_LEARNER_H_
 
 #include <LightGBM/dataset.h>
+
 #include <LightGBM/tree.h>
 #include <LightGBM/tree_learner.h>
 #include <LightGBM/utils/array_args.h>
@@ -58,7 +59,13 @@ class SerialTreeLearner: public TreeLearner {
   Tree* FitByExistingTree(const Tree* old_tree, const std::vector<int>& leaf_pred,
                           const score_t* gradients, const score_t* hessians) override;
 
-  Tree* FitThreshold(const std::vector<int>& leaf_pred, const Tree* old_tree, const score_t* gradients, const score_t* hessians) override;
+  Tree* FitThreshold(const std::vector<uint64_t>& group_bin_boundaries,
+    const std::vector<std::unique_ptr<FeatureGroup>>& feature_groups,
+    const std::vector<int>& feature2subfeature,
+    const std::vector<int>& feature2group,
+    const std::vector<int>& leaf_pred,
+    const Tree* old_tree, const score_t* gradients,
+    const score_t* hessians) override;
 
   int FindBestSplitsForThreshold(int feature_index, const data_size_t* data_indices, data_size_t num_data,
     const score_t* gradients, const score_t* hessians);
