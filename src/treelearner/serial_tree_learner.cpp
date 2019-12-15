@@ -308,6 +308,7 @@ Tree* SerialTreeLearner::Train(const score_t* gradients, const score_t *hessians
 
 Tree* SerialTreeLearner::FitByExistingTree(const Tree* old_tree, const score_t* gradients, const score_t *hessians) const {
   auto tree = std::unique_ptr<Tree>(new Tree(*old_tree));
+  Log::Info("fit by existing tree function used");
   CHECK(data_partition_->num_leaves() >= tree->num_leaves());
   OMP_INIT_EX();
   #pragma omp parallel for schedule(static)

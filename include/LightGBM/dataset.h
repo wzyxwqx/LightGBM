@@ -437,6 +437,10 @@ class Dataset {
     return feature_groups_[group]->Split(sub_feature, threshold, num_threshold, default_left, data_indices, num_data, lte_indices, gt_indices);
   }
 
+  void SaveBinMapperBinaryFile(const char* bin_filename, std::vector<std::unique_ptr<BinMapper>>* bin_mappers);
+
+  std::vector<std::unique_ptr<BinMapper>>* LoadBinMapperFromBinFile(const char* filename);
+
   inline int SubFeatureBinOffset(int i) const {
     const int sub_feature = feature2subfeature_[i];
     if (sub_feature == 0) {

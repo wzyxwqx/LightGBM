@@ -234,6 +234,7 @@ void Dataset::Construct(
   int num_sample_col,
   size_t total_sample_cnt,
   const Config& io_config) {
+  Log::Info("dataset construct function used!!!");
   num_total_features_ = num_total_features;
   CHECK(num_total_features_ == static_cast<int>(bin_mappers->size()));
   sparse_threshold_ = io_config.sparse_threshold;
@@ -406,6 +407,72 @@ void Dataset::ResetConfig(const char* parameters) {
     }
   }
 }
+
+void Dataset::SaveBinMapperBinaryFile(const char* bin_filename, std::vector<std::unique_ptr<BinMapper>>* bin_mappers) {
+  if (bin_filename != nullptr
+    && std::string(bin_filename) == data_filename_) {
+    Log::Warning("Bianry file %s already exists", bin_filename);
+    return;
+  }
+  // if not pass a filename, just append ".bin" of original file
+  std::string bin_filename_str(data_filename_);
+  if (bin_filename == nullptr || bin_filename[0] == '\0') {
+    bin_filename_str.append(".bin");
+    bin_filename = bin_filename_str.c_str();
+  }
+  bool is_file_existed = false;
+
+  if (VirtualFileWriter::Exists(bin_filename)) {
+    is_file_existed = true;
+    Log::Warning("File %s exists, cannot save binary to it", bin_filename);
+  }
+
+  if (!is_file_existed) {
+    auto writer = VirtualFileWriter::Make(bin_filename);
+    if (!writer->Init()) {
+      Log::Fatal("Cannot write binary data to %s ", bin_filename);
+    }
+    Log::Info("Saving data to binary file %s", bin_filename);
+    int size = static_cast<int>(bin_mappers->size());
+      writer->Write(&size, sizeof(int));
+    for (int i = 0; i < static_cast<int>(bin_mappers->size()); ++i) {
+      size_t size_of_mapper = bin_mappers[i]->SizeInByte();
+      writer->Write(&size_of_mapper, sizeof(size_of_mapper));
+      bin_mappers[i].SaveBinaryToFile(writer);
+    }
+  }
+}
+
+std::vector<std::unique_ptr<BinMapper>>* Dataset::LoadBinMapperFromBinFile(const char* filename)
+{
+  std::string bin_filename(filename);
+  bin_filename.append(".bin");//may be changed
+  auto reader = VirtualFileReader::Make(bin_filename);
+  if (!reader->Init()) {
+    Log::Fatal("Could not read binary data from %s", bin_filename);
+  }
+  // buffer to read binary file
+  size_t buffer_size = 16 * 1024 * 1024;
+  auto buffer = std::vector<char>(buffer_size);
+  //read size of bin mappers
+  int size;
+  size_t read_cnt = reader->Read(&size, sizeof(int));
+
+  std::vector<std::unique_ptr<BinMapper>> bin_mappers;
+  for (int i = 0; i < size; ++i) {
+    size_t size_of_mapper;
+    reader->Read(&size_of_mapper, sizeof(size_of_mapper));
+
+    if (size_of_mapper > buffer_size) {
+      buffer_size = size_of_mapper;
+      buffer.resize(buffer_size);
+    }
+    read_cnt = reader->Read(buffer.data(), size_of_mapper);
+    bin_mappers.emplace_back(new BinMapper(buffer.data()));
+  }
+  return bin_mappers;
+}
+
 
 void Dataset::ConstructHistogramsForRefit(int feature,
   const int* data_indices, int num_data,

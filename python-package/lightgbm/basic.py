@@ -2451,11 +2451,13 @@ class Booster(object):
             predictor.handle))
         leaf_preds = leaf_preds.reshape(-1)
         ptr_data, type_ptr_data, _ = c_int_array(leaf_preds)
+        print('pre refit!')
         _safe_call(_LIB.LGBM_BoosterRefit(
             new_booster.handle,
             ptr_data,
             ctypes.c_int(nrow),
             ctypes.c_int(ncol)))
+        print('already refit!')
         new_booster.network = self.network
         new_booster.__attr = self.__attr.copy()
         return new_booster

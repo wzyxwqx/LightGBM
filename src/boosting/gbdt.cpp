@@ -299,6 +299,7 @@ void GBDT::RefitTree(const std::vector<std::vector<int>>& tree_leaf_prediction) 
   CHECK(tree_leaf_prediction.size() > 0);
   CHECK(static_cast<size_t>(num_data_) == tree_leaf_prediction.size());
   CHECK(static_cast<size_t>(models_.size()) == tree_leaf_prediction[0].size());
+  Log::Info("refit used!!!");
   int num_iterations = static_cast<int>(models_.size() / num_tree_per_iteration_);
   std::vector<int> leaf_pred(num_data_);
   for (int iter = 0; iter < num_iterations; ++iter) {
