@@ -415,6 +415,8 @@ void Dataset::ConstructHistogramsForRefit(int feature,
   auto ptr_ordered_grad = gradients;
   auto ptr_ordered_hess = hessians;
 
+  int group_index = feature2group_[feature];
+
   //#pragma omp parallel for schedule(static)  should be adjusted
   for (int i = 0; i < num_data; ++i) {
     ordered_gradients[i] = gradients[data_indices[i]];
@@ -423,11 +425,11 @@ void Dataset::ConstructHistogramsForRefit(int feature,
 
   ptr_ordered_grad = ordered_gradients;
   ptr_ordered_hess = ordered_hessians;
-  auto data_ptr = hist_data + group_bin_boundaries_[feature];//maybe this feature needs to be converted
-  const int num_bin = feature_groups_[feature]->num_total_bin_;
+  auto data_ptr = hist_data + group_bin_boundaries_[group_index];//maybe this feature needs to be converted
+  const int num_bin = feature_groups_[group_index]->num_total_bin_;
   std::memset(reinterpret_cast<void*>(data_ptr + 1), 0, (num_bin - 1) * sizeof(HistogramBinEntry));
   // construct histograms
-  feature_groups_[feature]->bin_data_->ConstructHistogram(
+  feature_groups_[group_index]->bin_data_->ConstructHistogram(
     data_indices,
     num_data,
     ptr_ordered_grad,

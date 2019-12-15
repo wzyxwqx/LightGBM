@@ -293,11 +293,6 @@ void GBDT::Train(int snapshot_freq, const std::string& model_output_path) {
       SaveModelToFile(0, -1, snapshot_out.c_str());
     }
   }
-  tree_learner_->TrainData()->GetFeature2Group(feature2group_);
-  tree_learner_->TrainData()->GetFeature2SubFeature(feature2subfeature_);
-  tree_learner_->TrainData()->GetFeatureGroups(feature_groups_);
-  tree_learner_->TrainData()->GetGroupBinBoundaries(group_bin_boundaries_);
-
 }
 
 void GBDT::RefitTree(const std::vector<std::vector<int>>& tree_leaf_prediction) {
