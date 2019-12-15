@@ -228,6 +228,18 @@ class Booster {
     return boosting_->TrainOneIter(nullptr, nullptr);
   }
 
+  void RefitThreshold(const int32_t* leaf_preds, int32_t nrow, int32_t ncol) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    std::vector<std::vector<int32_t>> v_leaf_preds(nrow, std::vector<int32_t>(ncol, 0));
+    for (int i = 0; i < nrow; ++i) {
+      for (int j = 0; j < ncol; ++j) {
+        v_leaf_preds[i][j] = leaf_preds[i * ncol + j];
+      }
+    }
+    boosting_->RefitTreeThreshold(v_leaf_preds);
+  }
+
+
   void Refit(const int32_t* leaf_preds, int32_t nrow, int32_t ncol) {
     std::lock_guard<std::mutex> lock(mutex_);
     std::vector<std::vector<int32_t>> v_leaf_preds(nrow, std::vector<int32_t>(ncol, 0));
@@ -1153,6 +1165,13 @@ int LGBM_BoosterRefit(BoosterHandle handle, const int32_t* leaf_preds, int32_t n
   API_BEGIN();
   Booster* ref_booster = reinterpret_cast<Booster*>(handle);
   ref_booster->Refit(leaf_preds, nrow, ncol);
+  API_END();
+}
+
+int LGBM_BoosterRefitThreshold(BoosterHandle handle, const int32_t* leaf_preds, int32_t nrow, int32_t ncol) {
+  API_BEGIN();
+  Booster* ref_booster = reinterpret_cast<Booster*>(handle);
+  ref_booster->RefitThreshold(leaf_preds, nrow, ncol);
   API_END();
 }
 

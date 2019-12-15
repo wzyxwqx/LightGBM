@@ -76,6 +76,7 @@ class LIGHTGBM_EXPORT Boosting {
   */
   virtual void RefitTree(const std::vector<std::vector<int>>& tree_leaf_prediction) = 0;
 
+  virtual void RefitTreeThreshold(const std::vector<std::vector<int>>& tree_leaf_prediction) = 0;
   /*!
   * \brief Training logic
   * \param gradients nullptr for using default objective, otherwise use self-defined boosting
