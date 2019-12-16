@@ -226,7 +226,7 @@ std::vector<std::vector<int>> FastFeatureBundling(const std::vector<std::unique_
 }
 
 void Dataset::Construct(
-  std::vector<std::unique_ptr<BinMapper>>* bin_mappers,
+  std::vector<std::unique_ptr<BinMapper>>* bin_mappers_origin,
   int num_total_features,
   const std::vector<std::vector<double>>& forced_bins,
   int** sample_non_zero_indices,
@@ -236,11 +236,28 @@ void Dataset::Construct(
   const Config& io_config) {
   Log::Info("dataset construct function used!!!");
   num_total_features_ = num_total_features;
-  CHECK(num_total_features_ == static_cast<int>(bin_mappers->size()));
+  CHECK(num_total_features_ == static_cast<int>(bin_mappers_origin->size()));
   sparse_threshold_ = io_config.sparse_threshold;
   // get num_features
   std::vector<int> used_features;
+
+  std::vector<std::unique_ptr<BinMapper>>*bin_mappers = new std::vector<std::unique_ptr<BinMapper>>;
+
+  if (VirtualFileWriter::Exists("old_bin_mappers.bin")) {
+    Log::Info("old file detected, use old bin mappers");
+    LoadBinMapperFromBinFile(*bin_mappers, "old_bin_mappers.bin");
+    Log::Info("successfully load old bin mappers");
+  }
+  else  {
+    Log::Info("construct brand new dataset, use new bin mappers");
+    //memory leak here?
+    bin_mappers = bin_mappers_origin;
+    SaveBinMapperBinaryFile("old_bin_mappers.bin", bin_mappers_origin);
+    Log::Info("successfully save newly-build bin mappers");
+    
+  }
   auto& ref_bin_mappers = *bin_mappers;
+  
   for (int i = 0; i < static_cast<int>(bin_mappers->size()); ++i) {
     if (ref_bin_mappers[i] != nullptr && !ref_bin_mappers[i]->is_trivial()) {
       used_features.emplace_back(i);
@@ -477,6 +494,7 @@ void Dataset::ConstructHistogramsForRefit(int feature,
   const score_t* gradients, const score_t* hessians,
   score_t* ordered_gradients, score_t* ordered_hessians,
   HistogramBinEntry* hist_data) const{
+  Log::Info("Dataset::ConstructHistogramsForRefit begin");
   auto ptr_ordered_grad = gradients;
   auto ptr_ordered_hess = hessians;
 
@@ -500,6 +518,7 @@ void Dataset::ConstructHistogramsForRefit(int feature,
     ptr_ordered_grad,
     ptr_ordered_hess,
     data_ptr);
+  Log::Info("Dataset::ConstructHistogramsForRefit end");
 }
 
 
@@ -1088,6 +1107,7 @@ void Dataset::ConstructHistograms(const std::vector<int8_t>& is_feature_used,
 
 void Dataset::FixHistogram(int feature_idx, double sum_gradient, double sum_hessian, data_size_t num_data,
                            HistogramBinEntry* data) const {
+  Log::Info("Dataset::FixHistogram begin");
   const int group = feature2group_[feature_idx];
   const int sub_feature = feature2subfeature_[feature_idx];
   const BinMapper* bin_mapper = feature_groups_[group]->bin_mappers_[sub_feature].get();
@@ -1105,6 +1125,7 @@ void Dataset::FixHistogram(int feature_idx, double sum_gradient, double sum_hess
       }
     }
   }
+  Log::Info("Dataset::FixHistogram end");
 }
 
 template<typename T>
