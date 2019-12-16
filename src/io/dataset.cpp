@@ -463,7 +463,7 @@ void Dataset::SaveBinMapperBinaryFile(const char* bin_filename, std::vector<std:
 void Dataset::LoadBinMapperFromBinFile(std::vector<std::unique_ptr<BinMapper>> &result, const char* filename)
 {
   std::string bin_filename(filename);
-  bin_filename.append(".bin");//may be changed
+  //bin_filename.append(".bin");//may be changed
   auto reader = VirtualFileReader::Make(bin_filename);
   if (!reader->Init()) {
     Log::Fatal("Could not read binary data from %s", bin_filename);
