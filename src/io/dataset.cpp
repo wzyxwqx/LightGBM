@@ -436,14 +436,14 @@ void Dataset::SaveBinMapperBinaryFile(const char* bin_filename, std::vector<std:
     int size = static_cast<int>(bin_mappers->size());
       writer->Write(&size, sizeof(int));
     for (int i = 0; i < static_cast<int>(bin_mappers->size()); ++i) {
-      size_t size_of_mapper = bin_mappers[i]->SizeInByte();
+      size_t size_of_mapper = (*bin_mappers)[i]->SizesInByte();
       writer->Write(&size_of_mapper, sizeof(size_of_mapper));
-      bin_mappers[i].SaveBinaryToFile(writer);
+      (*bin_mappers)[i]->SaveBinaryToFile(writer.get());
     }
   }
 }
 
-std::vector<std::unique_ptr<BinMapper>>* Dataset::LoadBinMapperFromBinFile(const char* filename)
+void Dataset::LoadBinMapperFromBinFile(std::vector<std::unique_ptr<BinMapper>> &result, const char* filename)
 {
   std::string bin_filename(filename);
   bin_filename.append(".bin");//may be changed
@@ -458,7 +458,6 @@ std::vector<std::unique_ptr<BinMapper>>* Dataset::LoadBinMapperFromBinFile(const
   int size;
   size_t read_cnt = reader->Read(&size, sizeof(int));
 
-  std::vector<std::unique_ptr<BinMapper>> bin_mappers;
   for (int i = 0; i < size; ++i) {
     size_t size_of_mapper;
     reader->Read(&size_of_mapper, sizeof(size_of_mapper));
@@ -468,9 +467,8 @@ std::vector<std::unique_ptr<BinMapper>>* Dataset::LoadBinMapperFromBinFile(const
       buffer.resize(buffer_size);
     }
     read_cnt = reader->Read(buffer.data(), size_of_mapper);
-    bin_mappers.emplace_back(new BinMapper(buffer.data()));
+    result.emplace_back(new BinMapper(buffer.data()));
   }
-  return bin_mappers;
 }
 
 

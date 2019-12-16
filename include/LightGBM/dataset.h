@@ -439,7 +439,7 @@ class Dataset {
 
   void SaveBinMapperBinaryFile(const char* bin_filename, std::vector<std::unique_ptr<BinMapper>>* bin_mappers);
 
-  std::vector<std::unique_ptr<BinMapper>>* LoadBinMapperFromBinFile(const char* filename);
+  void Dataset::LoadBinMapperFromBinFile(std::vector<std::unique_ptr<BinMapper>>&result, const char* filename);
 
   inline int SubFeatureBinOffset(int i) const {
     const int sub_feature = feature2subfeature_[i];
