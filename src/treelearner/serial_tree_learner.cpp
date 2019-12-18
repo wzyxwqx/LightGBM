@@ -164,9 +164,8 @@ Tree* SerialTreeLearner::FitThreshold(const std::vector<int>& leaf_pred, const T
       if (leaf_parent[leaf_pred[i]] == iter && node_is_numparent[iter]) {
       data_indices.push_back(i);
     }
-    Log::Info("Leave:%d,datanum:%d",iter,data_indices.size());
-    int feature = tree->GetNodeFeature(iter);//this is used to get feature but may need to be changed later
-    
+    int real_feature = tree->GetNodeFeature(iter);//this is used to get feature but may need to be changed later
+    int feature = train_data_->InnerFeatureIndex(real_feature);
     histogram_pool_.Get(1, &smaller_leaf_histogram_array_);//using smaller_leaf_histogram_array_ may cause problems
     HistogramBinEntry* fit_hist_data = smaller_leaf_histogram_array_[0].RawData() - 1;;
     train_data_->ConstructHistogramsForRefit(feature, data_indices.data(),
