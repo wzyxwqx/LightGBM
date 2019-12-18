@@ -487,6 +487,7 @@ void GBDT::RefitTreeThreshold(const std::vector<std::vector<int>>& tree_leaf_pre
       auto grad = gradients_.data() + offset;
       auto hess = hessians_.data() + offset;
       auto new_tree = tree_learner_->FitThreshold(leaf_pred, models_[model_index].get(), grad, hess);
+      train_score_updater_->AddScore(tree_learner_.get(), new_tree, tree_id);
       models_[model_index].reset(new_tree);
     }
   }
