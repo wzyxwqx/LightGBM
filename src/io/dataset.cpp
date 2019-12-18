@@ -1107,7 +1107,7 @@ void Dataset::ConstructHistograms(const std::vector<int8_t>& is_feature_used,
 
 void Dataset::FixHistogram(int feature_idx, double sum_gradient, double sum_hessian, data_size_t num_data,
                            HistogramBinEntry* data) const {
-  Log::Info("Dataset::FixHistogram begin");
+  //Log::Info("Dataset::FixHistogram begin");
   const int group = feature2group_[feature_idx];
   const int sub_feature = feature2subfeature_[feature_idx];
   const BinMapper* bin_mapper = feature_groups_[group]->bin_mappers_[sub_feature].get();
@@ -1125,7 +1125,7 @@ void Dataset::FixHistogram(int feature_idx, double sum_gradient, double sum_hess
       }
     }
   }
-  Log::Info("Dataset::FixHistogram end");
+  //Log::Info("Dataset::FixHistogram end");
 }
 
 template<typename T>

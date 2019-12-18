@@ -646,9 +646,9 @@ void Tree::UnwindPath(PathElement *unique_path, int unique_depth, int path_index
 }
 
 void Tree::ResetThreshold(int node_index, double new_threshold, double discount_factor) {
-  Log::Info("Tree::ResetThreshold begin");
+  double tmp = threshold_[node_index];
   threshold_[node_index] = threshold_[node_index] * (1 - discount_factor) + discount_factor * new_threshold;
-  Log::Info("Tree::ResetThreshold end");
+  Log::Info("Tree::ResetThreshold node:%d,old:%lf,new:%lf,merged:%f",node_index,tmp,new_threshold,threshold_[node_index]);
 }
 
 bool Tree::IsTwoLeavesParents(int i) const {
