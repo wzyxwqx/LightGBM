@@ -2451,13 +2451,60 @@ class Booster(object):
             predictor.handle))
         leaf_preds = leaf_preds.reshape(-1)
         ptr_data, type_ptr_data, _ = c_int_array(leaf_preds)
-        print('pre refit!')
         _safe_call(_LIB.LGBM_BoosterRefit(
             new_booster.handle,
             ptr_data,
             ctypes.c_int(nrow),
             ctypes.c_int(ncol)))
-        print('already refit!')
+        new_booster.network = self.network
+        new_booster.__attr = self.__attr.copy()
+        return new_booster
+
+        
+    def refit_threshold(self, data, label, decay_rate=0.9, **kwargs):
+        """Refit the existing Booster by new data.
+
+        Parameters
+        ----------
+        data : string, numpy array, pandas DataFrame, H2O DataTable's Frame or scipy.sparse
+            Data source for refit.
+            If string, it represents the path to txt file.
+        label : list, numpy 1-D array or pandas Series / one-column DataFrame
+            Label for refit.
+        decay_rate : float, optional (default=0.9)
+            Decay rate of refit,
+            will use ``leaf_output = decay_rate * old_leaf_output + (1.0 - decay_rate) * new_leaf_output`` to refit trees.
+        **kwargs
+            Other parameters for refit.
+            These parameters will be passed to ``predict`` method.
+
+        Returns
+        -------
+        result : Booster
+            Refitted Booster.
+        """
+        if self.__set_objective_to_none:
+            raise LightGBMError('Cannot refit due to null objective function.')
+        predictor = self._to_predictor(copy.deepcopy(kwargs))
+        leaf_preds = predictor.predict(data, -1, pred_leaf=True)
+        nrow, ncol = leaf_preds.shape
+        train_set = Dataset(data, label, silent=True)
+        new_params = copy.deepcopy(self.params)
+        new_params['refit_decay_rate'] = decay_rate
+        new_booster = Booster(new_params, train_set, silent=True)
+        # Copy models
+        _safe_call(_LIB.LGBM_BoosterMerge(
+            new_booster.handle,
+            predictor.handle))
+        leaf_preds = leaf_preds.reshape(-1)
+        ptr_data, type_ptr_data, _ = c_int_array(leaf_preds)
+        print('pre refit threshold!')
+        _safe_call(_LIB.LGBM_BoosterRefit(
+            new_booster.handle,
+            ptr_data,
+            ctypes.c_int(nrow),
+            ctypes.c_int(ncol)))
+        print('refit threshold complete!')
         new_booster.network = self.network
         new_booster.__attr = self.__attr.copy()
         return new_booster
