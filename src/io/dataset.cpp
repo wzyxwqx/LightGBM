@@ -494,7 +494,6 @@ void Dataset::ConstructHistogramsForRefit(int feature,
   const score_t* gradients, const score_t* hessians,
   score_t* ordered_gradients, score_t* ordered_hessians,
   HistogramBinEntry* hist_data) const{
-  Log::Info("Dataset::ConstructHistogramsForRefit begin");
   auto ptr_ordered_grad = gradients;
   auto ptr_ordered_hess = hessians;
 
@@ -518,7 +517,6 @@ void Dataset::ConstructHistogramsForRefit(int feature,
     ptr_ordered_grad,
     ptr_ordered_hess,
     data_ptr);
-  Log::Info("Dataset::ConstructHistogramsForRefit end");
 }
 
 
@@ -1107,7 +1105,6 @@ void Dataset::ConstructHistograms(const std::vector<int8_t>& is_feature_used,
 
 void Dataset::FixHistogram(int feature_idx, double sum_gradient, double sum_hessian, data_size_t num_data,
                            HistogramBinEntry* data) const {
-  Log::Info("Dataset::FixHistogram begin");
   const int group = feature2group_[feature_idx];
   const int sub_feature = feature2subfeature_[feature_idx];
   const BinMapper* bin_mapper = feature_groups_[group]->bin_mappers_[sub_feature].get();
@@ -1125,7 +1122,6 @@ void Dataset::FixHistogram(int feature_idx, double sum_gradient, double sum_hess
       }
     }
   }
-  Log::Info("Dataset::FixHistogram end");
 }
 
 template<typename T>

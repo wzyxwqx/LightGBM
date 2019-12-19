@@ -320,6 +320,8 @@ class Tree {
   * \param feature_values Feature value of this record
   * \return Leaf index
   */
+
+  double GetThreshold(int node);
   inline int GetLeaf(const double* feature_values) const;
   inline int GetLeafByMap(const std::unordered_map<int, double>& feature_values) const;
 

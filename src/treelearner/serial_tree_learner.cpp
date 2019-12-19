@@ -145,7 +145,6 @@ Tree* SerialTreeLearner::FitThreshold(const std::vector<int>& leaf_pred, const T
   auto start_time = std::chrono::steady_clock::now();
 #endif
   // some initial works before training
-  Log::Info("SerialTreeLearner::FitThreshold begin");
   histogram_pool_.ResetMap();//This is used to store data, can be replaced
   auto tree = std::unique_ptr<Tree>(new Tree(*old_tree));//construct tree
   std::vector<bool> node_is_numparent(tree->num_leaves() - 1, 0);//store node has two children
@@ -182,13 +181,11 @@ Tree* SerialTreeLearner::FitThreshold(const std::vector<int>& leaf_pred, const T
     //OMP_LOOP_EX_END();
   }
   //OMP_THROW_EX();
-  Log::Info("SerialTreeLearner::FitThreshold end");
   return tree.release();
 }
 
 int SerialTreeLearner::FindBestSplitsForThreshold(int feature_index, const data_size_t* data_indices, data_size_t num_data,
   const score_t* gradients, const score_t* hessians) {
-  Log::Info("SerialTreeLearner::FindBestSplitsForThreshold begin");
   score_t sum_gradients = 0;
   score_t sum_hessians = 0;
   for (data_size_t i = 0; i < num_data; ++i) {
@@ -207,7 +204,6 @@ int SerialTreeLearner::FindBestSplitsForThreshold(int feature_index, const data_
     -std::numeric_limits<double>::max(),
     std::numeric_limits<double>::max(),
     &best_split);
-  Log::Info("SerialTreeLearner::FindBestSplitsForThreshold end");
   return best_split.threshold;
 }
 
