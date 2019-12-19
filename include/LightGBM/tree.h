@@ -127,7 +127,7 @@ class Tree {
 
   void GetLeafParent(std::vector<int>& leaf_parent);
 
-  void ResetThreshold(int node_index, double new_threshold, double discount_factor);
+  void ResetThreshold(int node_index, double threshold_double, uint32_t threshold_bin);
 
   inline double Predict(const double* feature_values) const;
   inline double PredictByMap(const std::unordered_map<int, double>& feature_values) const;
@@ -223,6 +223,9 @@ class Tree {
   }
 
   void RecomputeMaxDepth();
+
+  double GetThreshold(int node);
+  uint32_t Tree::GetThresholdBin(int node_index);
 
  private:
   std::string NumericalDecisionIfElse(int node) const;
@@ -321,7 +324,7 @@ class Tree {
   * \return Leaf index
   */
 
-  double GetThreshold(int node);
+
   inline int GetLeaf(const double* feature_values) const;
   inline int GetLeafByMap(const std::unordered_map<int, double>& feature_values) const;
 

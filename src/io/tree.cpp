@@ -652,10 +652,14 @@ double Tree::GetThreshold(int node_index) {
   return threshold_[node_index];
 }
 
-void Tree::ResetThreshold(int node_index, double new_threshold, double discount_factor) {
-  double tmp = threshold_[node_index];
-  threshold_[node_index] = threshold_[node_index] * (1 - discount_factor) + discount_factor * new_threshold;
-  Log::Info("Tree::ResetThreshold node:%d,old:%lf,new:%lf,merged:%f", node_index, tmp, new_threshold, threshold_[node_index]);
+uint32_t Tree::GetThresholdBin(int node_index) {
+  return threshold_in_bin_[node_index];
+}
+
+
+void Tree::ResetThreshold(int node_index, double threshold_double, uint32_t threshold_bin) {
+  threshold_[node_index] = threshold_double;
+  threshold_in_bin_[node_index] = threshold_bin;
 }
 
 bool Tree::IsTwoLeavesParents(int i) const {

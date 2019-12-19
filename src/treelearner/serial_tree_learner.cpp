@@ -145,6 +145,7 @@ Tree* SerialTreeLearner::FitThreshold(const std::vector<int>& leaf_pred, const T
   auto start_time = std::chrono::steady_clock::now();
 #endif
   // some initial works before training
+  data_partition_->ResetByLeafPred(leaf_pred, old_tree->num_leaves());
   histogram_pool_.ResetMap();//This is used to store data, can be replaced
   auto tree = std::unique_ptr<Tree>(new Tree(*old_tree));//construct tree
   std::vector<bool> node_is_numparent(tree->num_leaves() - 1, 0);//store node has two children
@@ -172,11 +173,15 @@ Tree* SerialTreeLearner::FitThreshold(const std::vector<int>& leaf_pred, const T
       data_indices.size(), gradients_,
       hessians_, ordered_gradients_.data(),
       ordered_hessians_.data(), fit_hist_data);
-    int new_threshold = FindBestSplitsForThreshold(feature, &data_indices[0], data_indices.size(),
+    int new_threshold_bin = FindBestSplitsForThreshold(feature, &data_indices[0], data_indices.size(),
       gradients_, hessians_);
-    auto threshold_double = train_data_->RealThreshold(feature, new_threshold);
-    double discount_factor = 0.2; //this can be changed, newthreshold portion
-    tree->ResetThreshold(iter, threshold_double, discount_factor);
+    //int old_threshold_bin = tree->GetThresholdBin(iter);
+    double old_threshold_double = tree->GetThreshold(iter);
+    double new_threshold_double = train_data_->RealThreshold(feature, new_threshold_bin);
+    double final_threshold_double = old_threshold_double * config_->refit_decay_rate + new_threshold_double * (1 - config_->refit_decay_rate);
+    uint32_t final_threshold_bin = train_data_->BinThreshold(feature, final_threshold_double);
+    Log::Info("old threshold:%d,new threshold:%d,final threshold:%d", old_threshold_double, new_threshold_double, final_threshold_double);
+    tree->ResetThreshold(iter, final_threshold_double, final_threshold_bin);
     data_indices.clear();
     //OMP_LOOP_EX_END();
   }
