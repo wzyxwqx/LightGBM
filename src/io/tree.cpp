@@ -660,6 +660,9 @@ void Tree::ResetThreshold(int node_index, double new_threshold, double discount_
   threshold_[node_index] = threshold_[node_index] * (1 - discount_factor) + discount_factor * new_threshold;
   Log::Info("Tree::ResetThreshold end");
 <<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> parent of bfab376... add export of refit_threshold and enable log info
+=======
 >>>>>>> parent of bfab376... add export of refit_threshold and enable log info
 =======
 >>>>>>> parent of bfab376... add export of refit_threshold and enable log info
