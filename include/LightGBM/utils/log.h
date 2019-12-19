@@ -90,13 +90,13 @@ class Log {
 
  private:
   static void Write(LogLevel level, const char* level_str, const char *format, va_list val) {
-    //if (level <= GetLevel()) {  // omit the message with low level
+    if (level <= GetLevel()) {  // omit the message with low level
       // write to STDOUT
       printf("[LightGBM] [%s] ", level_str);
       vprintf(format, val);
       printf("\n");
       fflush(stdout);
-    //}
+    }
   }
 
   // a trick to use static variable in header file.

@@ -645,6 +645,7 @@ void Tree::UnwindPath(PathElement *unique_path, int unique_depth, int path_index
   }
 }
 
+<<<<<<< HEAD
 void Tree::ResetThreshold(int node_index, double new_threshold, uint32_t new_threshold_uint32) {
   threshold_[node_index]= new_threshold;
   threshold_in_bin_[node_index] = new_threshold_uint32;
@@ -653,6 +654,12 @@ void Tree::ResetThreshold(int node_index, double new_threshold, uint32_t new_thr
 
 double Tree:: GetThreshold(int node_index) {
   return threshold_[node_index];
+=======
+void Tree::ResetThreshold(int node_index, double new_threshold, double discount_factor) {
+  Log::Info("Tree::ResetThreshold begin");
+  threshold_[node_index] = threshold_[node_index] * (1 - discount_factor) + discount_factor * new_threshold;
+  Log::Info("Tree::ResetThreshold end");
+>>>>>>> parent of bfab376... add export of refit_threshold and enable log info
 }
 
 bool Tree::IsTwoLeavesParents(int i) const {

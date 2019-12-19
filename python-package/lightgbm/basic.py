@@ -2499,7 +2499,7 @@ class Booster(object):
         leaf_preds = leaf_preds.reshape(-1)
         ptr_data, type_ptr_data, _ = c_int_array(leaf_preds)
         print('pre refit threshold!')
-        _safe_call(_LIB.LGBM_BoosterRefitThreshold(
+        _safe_call(_LIB.LGBM_BoosterRefit(
             new_booster.handle,
             ptr_data,
             ctypes.c_int(nrow),

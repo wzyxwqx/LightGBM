@@ -494,10 +494,7 @@ LIGHTGBM_C_EXPORT int LGBM_BoosterRefit(BoosterHandle handle,
                                         const int32_t* leaf_preds,
                                         int32_t nrow,
                                         int32_t ncol);
-LIGHTGBM_C_EXPORT int LGBM_BoosterRefitThreshold(BoosterHandle handle,
-                                        const int32_t* leaf_preds,
-                                        int32_t nrow,
-                                        int32_t ncol);
+
 /*!
  * \brief Update the model by specifying gradient and Hessian directly
  *        (this can be used to support customized loss functions).
