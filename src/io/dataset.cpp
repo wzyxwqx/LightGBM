@@ -234,6 +234,7 @@ void Dataset::Construct(
   int num_sample_col,
   size_t total_sample_cnt,
   const Config& io_config) {
+  Log::Info("dataset construct function used!!!");
   num_total_features_ = num_total_features;
   CHECK(num_total_features_ == static_cast<int>(bin_mappers_origin->size()));
   sparse_threshold_ = io_config.sparse_threshold;
@@ -489,10 +490,11 @@ void Dataset::LoadBinMapperFromBinFile(std::vector<std::unique_ptr<BinMapper>> &
 
 
 void Dataset::ConstructHistogramsForRefit(int feature,
-  const data_size_t* data_indices, int num_data,
+  const int* data_indices, int num_data,
   const score_t* gradients, const score_t* hessians,
   score_t* ordered_gradients, score_t* ordered_hessians,
   HistogramBinEntry* hist_data) const{
+  Log::Info("Dataset::ConstructHistogramsForRefit begin");
   auto ptr_ordered_grad = gradients;
   auto ptr_ordered_hess = hessians;
 
@@ -516,6 +518,7 @@ void Dataset::ConstructHistogramsForRefit(int feature,
     ptr_ordered_grad,
     ptr_ordered_hess,
     data_ptr);
+  Log::Info("Dataset::ConstructHistogramsForRefit end");
 }
 
 

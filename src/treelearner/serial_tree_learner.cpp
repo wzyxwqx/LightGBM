@@ -145,6 +145,7 @@ Tree* SerialTreeLearner::FitThreshold(const std::vector<int>& leaf_pred, const T
   auto start_time = std::chrono::steady_clock::now();
 #endif
   // some initial works before training
+  Log::Info("SerialTreeLearner::FitThreshold begin");
   histogram_pool_.ResetMap();//This is used to store data, can be replaced
   auto tree = std::unique_ptr<Tree>(new Tree(*old_tree));//construct tree
   std::vector<bool> node_is_numparent(tree->num_leaves() - 1, 0);//store node has two children
@@ -168,27 +169,26 @@ Tree* SerialTreeLearner::FitThreshold(const std::vector<int>& leaf_pred, const T
     int feature = train_data_->InnerFeatureIndex(real_feature);
     histogram_pool_.Get(1, &smaller_leaf_histogram_array_);//using smaller_leaf_histogram_array_ may cause problems
     HistogramBinEntry* fit_hist_data = smaller_leaf_histogram_array_[0].RawData() - 1;;
-    train_data_->ConstructHistogramsForRefit(feature, data_indices.data(),
+    train_data_->ConstructHistogramsForRefit(feature, &data_indices[0],
       data_indices.size(), gradients_,
       hessians_, ordered_gradients_.data(),
       ordered_hessians_.data(), fit_hist_data);
-    int new_threshold = FindBestSplitsForThreshold(feature, data_indices.data(), data_indices.size(),
+    int new_threshold = FindBestSplitsForThreshold(feature, &data_indices[0], data_indices.size(),
       gradients_, hessians_);
-    auto threshold_double = train_data_->RealThreshold(feature, new_threshold);//here need to change
-    double thresold_old = tree->GetThreshold(iter);
-    auto new_threshold_double = thresold_old * 0.8 + threshold_double * 0.2;//this can be changed, newthreshold portion
-    auto new_threshold_int32 = train_data_->BinThreshold(iter, new_threshold_double);
-    tree->ResetThreshold(iter, new_threshold_double, new_threshold_int32);
-    Log::Info("Tree::ResetThreshold node:%d,old:%lf,new:%lf,merged:%f", iter, thresold_old, new_threshold, new_threshold_double);
+    auto threshold_double = train_data_->RealThreshold(feature, new_threshold);
+    double discount_factor = 0.2; //this can be changed, newthreshold portion
+    tree->ResetThreshold(iter, threshold_double, discount_factor);
     data_indices.clear();
     //OMP_LOOP_EX_END();
   }
   //OMP_THROW_EX();
+  Log::Info("SerialTreeLearner::FitThreshold end");
   return tree.release();
 }
 
 int SerialTreeLearner::FindBestSplitsForThreshold(int feature_index, const data_size_t* data_indices, data_size_t num_data,
   const score_t* gradients, const score_t* hessians) {
+  Log::Info("SerialTreeLearner::FindBestSplitsForThreshold begin");
   score_t sum_gradients = 0;
   score_t sum_hessians = 0;
   for (data_size_t i = 0; i < num_data; ++i) {
@@ -207,6 +207,7 @@ int SerialTreeLearner::FindBestSplitsForThreshold(int feature_index, const data_
     -std::numeric_limits<double>::max(),
     std::numeric_limits<double>::max(),
     &best_split);
+  Log::Info("SerialTreeLearner::FindBestSplitsForThreshold end");
   return best_split.threshold;
 }
 

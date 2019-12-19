@@ -119,7 +119,7 @@ class Tree {
   * \return Prediction result
   */
 
-  double Tree::GetThreshold(int node_index);
+  
 
   int GetNodeFeature(int node);
 
@@ -127,7 +127,7 @@ class Tree {
 
   void GetLeafParent(std::vector<int>& leaf_parent);
 
-  void ResetThreshold(int node_index, double new_threshold, uint32_t threshold_uint32);
+  void ResetThreshold(int node_index, double new_threshold, double discount_factor);
 
   inline double Predict(const double* feature_values) const;
   inline double PredictByMap(const std::unordered_map<int, double>& feature_values) const;
