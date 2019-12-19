@@ -669,6 +669,7 @@ void Tree::ResetThreshold(int node_index, double new_threshold, double discount_
 }
 
 bool Tree::IsTwoLeavesParents(int i) const {
+  //Log::Info("left child:%d,%d,right child:%d,:%d",left_child_[i],~left_child_[i],right_child_[i],~right_child_[i]);
   if (left_child_[i] < 0 && right_child_[i] < 0)
     if (!GetDecisionType(decision_type_[i], kCategoricalMask))
     return 1;
