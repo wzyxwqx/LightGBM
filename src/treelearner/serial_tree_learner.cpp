@@ -180,7 +180,7 @@ Tree* SerialTreeLearner::FitThreshold(const std::vector<int>& leaf_pred, const T
     double new_threshold_double = train_data_->RealThreshold(feature, new_threshold_bin);
     double final_threshold_double = old_threshold_double * config_->refit_decay_rate + new_threshold_double * (1 - config_->refit_decay_rate);
     uint32_t final_threshold_bin = train_data_->BinThreshold(feature, final_threshold_double);
-    Log::Info("old threshold:%d,new threshold:%d,final threshold:%d", old_threshold_double, new_threshold_double, final_threshold_double);
+    Log::Info("old threshold:%llf,new threshold:%llf,final threshold:%llf", old_threshold_double, new_threshold_double, final_threshold_double);
     tree->ResetThreshold(iter, final_threshold_double, final_threshold_bin);
     data_indices.clear();
     //OMP_LOOP_EX_END();
@@ -312,7 +312,6 @@ Tree* SerialTreeLearner::Train(const score_t* gradients, const score_t *hessians
 
 Tree* SerialTreeLearner::FitByExistingTree(const Tree* old_tree, const score_t* gradients, const score_t *hessians) const {
   auto tree = std::unique_ptr<Tree>(new Tree(*old_tree));
-  Log::Info("fit by existing tree function used");
   CHECK(data_partition_->num_leaves() >= tree->num_leaves());
   OMP_INIT_EX();
   #pragma omp parallel for schedule(static)
